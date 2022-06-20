@@ -1,0 +1,114 @@
+#
+# SaveRotatingShop
+# Author: Lewis D (ItsLewizzz)
+# Copyright (c) Lewis D 2022. All rights reserved.
+#
+# Permissions
+#  Admin permission: saverotatingshop.admin
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# | PLUGIN MESSAGES                          |
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+messages:
+  no_permission: "&cYou do not have permission to execute this command."
+  reload: "&aThe plugin has been reloaded."
+  help_message:
+    - ""
+    - " &b&lSaveRotatingShop &7{VERSION}"
+    - " &7&oBy ItsLewizzz"
+    - "&r"
+    - " &7/shop &8- &fOpen shop."
+    - " &7/shop help &8- &fView help message."
+    - " &7/shop refresh &8- &fRefresh the shop."
+    - " &7/shop reload &8- &fReload configuration."
+    - "&r"
+
+  shop_refreshed: "&7You have manually refreshed the shop."
+
+  sell_success: "&7You have sold x{AMOUNT} items for &6${SOLD}&7."
+  sell_returned: "&cSome items have been returned as they could not be sold."
+
+  bulk_purchase_no_funds: "&7You don't have enough money to purchase. You need &6${AMOUNT}&7."
+  bulk_purchase_invalid_input: "&cThat's not a valid amount."
+  bulk_purchase_success: "&7You have successfully purchased &6x{AMOUNT} &7of this item for &6${COST}&7."
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# | GENERAL SETTINGS                         |
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+# Global GUI settings
+gui:
+  not_enough_coins_item:
+    material: BARRIER
+    display_name: "&c&lPURCHASE FAILED"
+    lore:
+      - "&8Transaction Error"
+      - ""
+      - "&7You don't have enough money."
+  purchase_success:
+    material: PLAYER_HEAD
+    base64: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVhM2I0OWJlZWMzYWIyM2FlMGI2MGRhYjU2ZTljYzhmYTE2NzY5YTI1ODMwYjVkOGQ2YzQ2Mzc4ZjU0NDMwIn19fQ==
+    display_name: "&a&lPURCHASE SUCCESS"
+    lore:
+      - "&8Transaction Success"
+      - ""
+      - "&7You have successfully purchased this item."
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# | BULK GUI SETTINGS                        |
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+bulk_purchase_gui:
+  title: "Purchase Item"
+  rows: 3
+
+  filler_items:
+    glass:
+      material: GRAY_STAINED_GLASS_PANE
+      display_name: "&r"
+      slots: [0-8, 19-21, 23-25]
+
+    balance_item:
+      material: PLAYER_HEAD
+      base64: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODM4MWM1MjlkNTJlMDNjZDc0YzNiZjM4YmI2YmEzZmRlMTMzN2FlOWJmNTAzMzJmYWE4ODllMGEyOGU4MDgxZiJ9fX0=
+      display_name: "&e&lBalance"
+      lore:
+        - ""
+        - "&7Money: &e${BALANCE}"
+      slot: 26
+
+  go_back_item:
+    material: PLAYER_HEAD
+    base64: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1MmUyYjkzNmNhODAyNmJkMjg2NTFkN2M5ZjI4MTlkMmU5MjM2OTc3MzRkMThkZmRiMTM1NTBmOGZkYWQ1ZiJ9fX0=
+    display_name: "&c&lGo back"
+    lore:
+      - "&7Return to the previous menu."
+    slot: 18
+
+  custom_amount_item:
+    material: OAK_SIGN
+    display_name: "&b&lCustom Amount"
+    lore:
+      - "&7Click to enter a custom amount."
+    slot: 22
+
+  # The first line of the sign is
+  # what will be used as the input
+  sign_menu:
+    - ""
+    - "-------------"
+    - "Enter Custom"
+    - "Amount"
+
+  # <SLOT>: <BUY AMOUNT>
+  buy_item_slots:
+    9: 1
+    10: 2
+    11: 4
+    12: 8
+    13: 16
+    14: 24
+    15: 32
+    16: 48
+    17: 64

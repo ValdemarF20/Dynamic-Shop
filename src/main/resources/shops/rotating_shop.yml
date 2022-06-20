@@ -1,0 +1,59 @@
+# Rotating shop
+
+# How many shop items should be displayed?
+# Make sure the GUI has enough slots available to display
+# each item. The shop items are added to the next
+# available slot in the menu
+shop_items_amount: 6
+
+# Messages related to this shop
+messages:
+  shop_refreshed: "&6[&e&lShop&6] &7The rotating shop has been updated!"
+
+# Should this shop be a rotating stock shop?
+rotating_shop:
+  enabled: true
+  hours: 24
+
+# Shop GUI settings
+gui:
+  title: "Rotating Shop"
+  rows: 4
+
+  # Filler items are not required and are modifiable
+  filler_items:
+    glass:
+      material: GRAY_STAINED_GLASS_PANE
+      display_name: "&r"
+      fill_border: true
+      slots: [10-11, 15-16, 19-25]
+    balance_item:
+      material: PLAYER_HEAD
+      base64: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODM4MWM1MjlkNTJlMDNjZDc0YzNiZjM4YmI2YmEzZmRlMTMzN2FlOWJmNTAzMzJmYWE4ODllMGEyOGU4MDgxZiJ9fX0=
+      display_name: "&e&lBalance"
+      lore:
+        - ""
+        - "&7Money: &e${BALANCE}"
+      slot: 31
+    refresh_time:
+      material: WATCH
+      display_name: "&e&lNext Rotation"
+      lore:
+        - ""
+        - "&7The shop will restock in &e{REFRESH_TIME}"
+      slot: 4
+
+shop_items:
+  '1':
+    material: DIAMOND_SWORD
+    display_name: "&6God Sword"
+    lore:
+      - "&7The best sword any gamer can have."
+      - ""
+      - "&6&lCOST: &f${COST}"
+      - ""
+      - "&eLeft-Click for bulk buy"
+      - "&eRight-Click for 1x item."
+    cost: 10
+    commands:
+      - "give {PLAYER} DIAMOND_SWORD {AMOUNT}"
