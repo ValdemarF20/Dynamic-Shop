@@ -23,19 +23,11 @@ repositories {
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
     compileOnly 'com.mojang:authlib:1.5.21' // for base64 head support
-    compileOnly "com.comphenix.protocol:ProtocolLib:4.7.0";
+    compileOnly "com.comphenix.protocol:ProtocolLib:4.7.0"
     compileOnly "com.github.MilkBowl:VaultAPI:1.7"
 
-    implementation 'me.mattstudios.utils:matt-framework:1.4.4'
-    implementation 'dev.triumphteam:triumph-gui:3.0.3'
-}
-
-import org.apache.tools.ant.filters.ReplaceTokens
-
-processResources {
-    from(sourceSets.main.resources.srcDirs) {
-        filter ReplaceTokens, tokens: [version: version, name: 'SaveMobCoins']
-    }
+    implementation 'me.mattstudios.utils:matt-framework:1.4.6'
+    implementation 'dev.triumphteam:triumph-gui:3.1.2'
 }
 
 compileJava {
