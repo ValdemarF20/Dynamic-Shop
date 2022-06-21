@@ -1,6 +1,5 @@
 package fun.lewisdev.saverotatingshop.command;
 
-import fun.lewisdev.saverotatingshop.SaveRotatingShopPlugin;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import me.mattstudios.mf.annotations.Command;
 import me.mattstudios.mf.annotations.Default;
