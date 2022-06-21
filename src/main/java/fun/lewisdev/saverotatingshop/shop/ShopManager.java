@@ -1,6 +1,6 @@
 package fun.lewisdev.saverotatingshop.shop;
 
-import fun.lewisdev.saverotatingshop.SaveRotatingShopPlugin;
+import fun.lewisdev.saverotatingshop.SaveDynamicShop;
 import fun.lewisdev.saverotatingshop.config.ConfigHandler;
 import fun.lewisdev.saverotatingshop.shop.menu.SellGui;
 import fun.lewisdev.saverotatingshop.shop.menu.ShopGui;
@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public class ShopManager {
 
-    private final SaveRotatingShopPlugin plugin;
+    private final SaveDynamicShop plugin;
     private ConfigHandler dataFile;
 
     private BuyShop shop;
@@ -31,7 +31,7 @@ public class ShopManager {
     private ItemStack notEnoughCoinsItem;
     private ItemStack purchaseSuccessItem;
 
-    public ShopManager(SaveRotatingShopPlugin plugin) {
+    public ShopManager(SaveDynamicShop plugin) {
         this.plugin = plugin;
     }
 
@@ -108,7 +108,7 @@ public class ShopManager {
         sellGui.open(player);
     }
 
-    public SaveRotatingShopPlugin getPlugin() {
+    public SaveDynamicShop getPlugin() {
         return plugin;
     }
 

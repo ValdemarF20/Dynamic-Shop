@@ -1,6 +1,6 @@
 package fun.lewisdev.saverotatingshop.task;
 
-import fun.lewisdev.saverotatingshop.SaveRotatingShopPlugin;
+import fun.lewisdev.saverotatingshop.SaveDynamicShop;
 import fun.lewisdev.saverotatingshop.shop.BuyShop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import fun.lewisdev.saverotatingshop.util.TextUtil;
@@ -10,7 +10,7 @@ public class TimerTask implements Runnable {
 
     private final ShopManager shopManager;
 
-    public TimerTask(SaveRotatingShopPlugin plugin) {
+    public TimerTask(SaveDynamicShop plugin) {
         this.shopManager = plugin.getShopManager();
     }
 

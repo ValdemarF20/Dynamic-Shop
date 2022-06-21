@@ -12,16 +12,21 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-public final class SaveRotatingShopPlugin extends JavaPlugin {
+import java.util.logging.Logger;
+
+public final class SaveDynamicShop extends JavaPlugin {
 
     private ShopManager shopManager;
     private BukkitTask timerTask;
     private Economy economy;
+    private Logger LOGGER;
 
     @Override
     public void onEnable() {
+        LOGGER = this.getLogger();
+        LOGGER.info("SaveDynamicShop has been started");
         if (!setupEconomy()) {
-            getLogger().severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
+            LOGGER.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
             getServer().getPluginManager().disablePlugin(this);
             return;
         }

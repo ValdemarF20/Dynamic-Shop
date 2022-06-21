@@ -1,6 +1,6 @@
 package fun.lewisdev.saverotatingshop.command;
 
-import fun.lewisdev.saverotatingshop.SaveRotatingShopPlugin;
+import fun.lewisdev.saverotatingshop.SaveDynamicShop;
 import fun.lewisdev.saverotatingshop.config.Messages;
 import fun.lewisdev.saverotatingshop.shop.BuyShop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
@@ -13,10 +13,10 @@ import org.bukkit.entity.Player;
 @Command("shop")
 public class ShopCommand extends CommandBase {
 
-    private final SaveRotatingShopPlugin plugin;
+    private final SaveDynamicShop plugin;
     private final ShopManager shopManager;
 
-    public ShopCommand(SaveRotatingShopPlugin plugin) {
+    public ShopCommand(SaveDynamicShop plugin) {
         this.plugin = plugin;
         this.shopManager = plugin.getShopManager();
     }
