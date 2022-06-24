@@ -1,6 +1,5 @@
 package fun.lewisdev.saverotatingshop;
 
-import fun.lewisdev.saverotatingshop.command.SellCommand;
 import fun.lewisdev.saverotatingshop.command.ShopCommand;
 import fun.lewisdev.saverotatingshop.config.Messages;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
@@ -40,7 +39,6 @@ public final class SaveDynamicShop extends JavaPlugin {
         CommandManager commandManager = new CommandManager(this, true);
         commandManager.getMessageHandler().register("cmd.no.permission", Messages.NO_PERMISSION::send);
         commandManager.register(new ShopCommand(this));
-        commandManager.register(new SellCommand(getShopManager()));
     }
 
     public void onReload() {

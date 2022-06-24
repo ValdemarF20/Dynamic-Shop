@@ -50,15 +50,14 @@ public class ConfigHandler {
             this.plugin.getLogger().severe("============= CONFIGURATION ERROR =============");
             this.plugin.getServer().getPluginManager().disablePlugin(this.plugin);
         }
-
     }
 
     public void save() {
         if (this.configuration != null && this.file != null) {
             try {
                 this.getConfig().save(this.file);
-            } catch (IOException var2) {
-                var2.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
         }

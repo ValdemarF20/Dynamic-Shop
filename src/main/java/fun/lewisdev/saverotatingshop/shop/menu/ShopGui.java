@@ -2,18 +2,24 @@ package fun.lewisdev.saverotatingshop.shop.menu;
 
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
-import fun.lewisdev.saverotatingshop.shop.BuyShop;
+import fun.lewisdev.saverotatingshop.shop.Shop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import fun.lewisdev.saverotatingshop.shop.ShopReward;
 import fun.lewisdev.saverotatingshop.util.GuiUtils;
 import fun.lewisdev.saverotatingshop.util.ItemStackBuilder;
 import fun.lewisdev.saverotatingshop.util.TextUtil;
 import fun.lewisdev.saverotatingshop.util.universal.XSound;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.KeybindComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -29,7 +35,7 @@ public class ShopGui {
         this.bulkPurchaseGui = new BulkPurchaseGui(shopManager);
     }
 
-    public void open(Player player, BuyShop shop) {
+    public void open(Player player, Shop shop) {
         FileConfiguration config = shop.getConfig();
         Gui gui = new Gui(config.getInt("gui.rows"), TextUtil.color(config.getString("gui.title")));
 
@@ -42,12 +48,17 @@ public class ShopGui {
         List<ShopReward> rewardList = shop.getActiveRewards().stream().map(identifier -> shop.getRewards().getOrDefault(identifier, errorItem)).collect(Collectors.toList());
         for (ShopReward reward : rewardList) {
             List<String> lore = new ArrayList<>();
-            reward.getDisplayItem().getItemMeta().getLore().forEach(line -> lore.add(line.replace("{COST}", TextUtil.numberFormat(reward.getCost()))));
-            GuiItem guiItem = new GuiItem(new ItemStackBuilder(reward.getDisplayItem().clone()).withLore(lore).build());
+            ItemStack displayItem =reward.getDisplayItem();
+            // Replace {COST} and {DROP} placeholders
+            if(displayItem.hasItemMeta() && displayItem.getItemMeta().hasLore()) {
+                displayItem.getItemMeta().getLore().forEach(line -> lore.add(line.replace("{COST}", String.valueOf(reward.getCost()))));
+            }
+
+            GuiItem guiItem = new GuiItem(new ItemStackBuilder(displayItem.clone()).withLore(lore).build());
             guiItem.setAction(event -> {
                 if (reward.getCost() < 0) return;
 
-                if (event.getClick().isLeftClick() && reward.isAllowBulkBuy()) {
+                if ((event.getClick() == ClickType.DROP || event.getClick() == ClickType.CONTROL_DROP) && reward.isAllowBulkBuy()) {
                     bulkPurchaseGui.open(player, shop, reward);
                     return;
                 }

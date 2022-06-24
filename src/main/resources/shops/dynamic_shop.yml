@@ -11,7 +11,7 @@ messages:
   shop_refreshed: "&6[&e&lShop&6] &7The rotating shop has been updated!"
 
 # Should this shop be a rotating stock shop?
-rotating_shop:
+dynamic_shop:
   enabled: true
   hours: 24
 
@@ -52,8 +52,10 @@ shop_items:
       - ""
       - "&6&lCOST: &f${COST}"
       - ""
-      - "&eLeft-Click for bulk buy"
-      - "&eRight-Click for 1x item."
+      - "&eLeft-Click to buy"
+      - "&eRight-Click to sell"
+      - "&ePress Q for bulk buy"
     cost: 10
     commands:
       - "give {PLAYER} DIAMOND_SWORD {AMOUNT}"
+    bulk_buy: true

@@ -2,7 +2,7 @@ package fun.lewisdev.saverotatingshop.command;
 
 import fun.lewisdev.saverotatingshop.SaveDynamicShop;
 import fun.lewisdev.saverotatingshop.config.Messages;
-import fun.lewisdev.saverotatingshop.shop.BuyShop;
+import fun.lewisdev.saverotatingshop.shop.Shop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import fun.lewisdev.saverotatingshop.util.TextUtil;
 import me.mattstudios.mf.annotations.*;
@@ -24,7 +24,7 @@ public class ShopCommand extends CommandBase {
     @Default
     public void defaultCommand(CommandSender sender) {
         if (sender instanceof Player) {
-            shopManager.openRotatingShop((Player) sender);
+            shopManager.openDynamicShop((Player) sender);
         } else {
             helpSubCommand(sender);
         }
@@ -46,7 +46,7 @@ public class ShopCommand extends CommandBase {
     @SubCommand("refresh")
     @Permission("saverotatingshop.admin")
     public void refreshSubCommand(CommandSender sender) {
-        BuyShop shop = shopManager.getBuyShop();
+        Shop shop = shopManager.getBuyShop();
         if (!shop.isRotatingShop()) {
             sender.sendMessage(TextUtil.color("&cThe shop is not a rotating shop."));
         } else {

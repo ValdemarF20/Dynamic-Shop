@@ -1,7 +1,7 @@
 package fun.lewisdev.saverotatingshop.task;
 
 import fun.lewisdev.saverotatingshop.SaveDynamicShop;
-import fun.lewisdev.saverotatingshop.shop.BuyShop;
+import fun.lewisdev.saverotatingshop.shop.Shop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import fun.lewisdev.saverotatingshop.util.TextUtil;
 import org.bukkit.Bukkit;
@@ -16,7 +16,7 @@ public class TimerTask implements Runnable {
 
     @Override
     public void run() {
-        BuyShop shop = shopManager.getBuyShop();
+        Shop shop = shopManager.getBuyShop();
         if (!shop.isRotatingShop()) return;
 
         if (shop.getRefreshTime() < System.currentTimeMillis()) {

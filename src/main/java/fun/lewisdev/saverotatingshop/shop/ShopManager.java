@@ -2,30 +2,25 @@ package fun.lewisdev.saverotatingshop.shop;
 
 import fun.lewisdev.saverotatingshop.SaveDynamicShop;
 import fun.lewisdev.saverotatingshop.config.ConfigHandler;
-import fun.lewisdev.saverotatingshop.shop.menu.SellGui;
 import fun.lewisdev.saverotatingshop.shop.menu.ShopGui;
 import fun.lewisdev.saverotatingshop.util.ItemStackBuilder;
-import fun.lewisdev.saverotatingshop.util.universal.XMaterial;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class ShopManager {
 
     private final SaveDynamicShop plugin;
     private ConfigHandler dataFile;
 
-    private BuyShop shop;
+    private Shop shop;
     private ShopGui shopGui;
 
-    private SellGui sellGui;
     private Map<Material, Double> sellItems;
 
     private ItemStack notEnoughCoinsItem;
@@ -38,33 +33,29 @@ public class ShopManager {
     public void onEnable() {
         final FileConfiguration config = plugin.getConfig();
 
+        //TODO: shopdata.yml usage?
         dataFile = new ConfigHandler(plugin, "shopdata");
         dataFile.saveDefaultConfig();
 
         shopGui = new ShopGui(this);
 
+        // This item is shown shortly after a player cannot afford an item
         notEnoughCoinsItem = ItemStackBuilder.getItemStack(config.getConfigurationSection("gui.not_enough_coins_item")).build();
+        // This item is shown shortly after a player has purchased an item
         purchaseSuccessItem = ItemStackBuilder.getItemStack(config.getConfigurationSection("gui.purchase_success")).build();
 
-        ConfigHandler sellShopConfigHandler = new ConfigHandler(plugin, "shops/sell_shop.yml");
-        sellShopConfigHandler.saveDefaultConfig();
-        FileConfiguration sellConfig = sellShopConfigHandler.getConfig();
-        sellGui = new SellGui(this, sellConfig);
-        sellItems = new HashMap<>();
-        for(String key : sellConfig.getConfigurationSection("sell_items").getKeys(false)) {
-            ConfigurationSection section = sellConfig.getConfigurationSection("sell_items." + key);
-            Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(section.getString("item.material"));
-            xMaterial.ifPresent(material -> sellItems.put(material.parseMaterial(), section.getDouble("sellPrice")));
-        }
-
-        ConfigHandler shopConfigHandler = new ConfigHandler(plugin, "shops/rotating_shop.yml");
+        // Creates a handler for the config file
+        ConfigHandler shopConfigHandler = new ConfigHandler(plugin, "shops/dynamic_shop.yml");
         shopConfigHandler.saveDefaultConfig();
+        // Gets the FileConfiguration from the handler
         FileConfiguration shopConfig = shopConfigHandler.getConfig();
-        shop = new BuyShop(shopConfig);
+        // Initializes the GUI
+        shop = new Shop(shopConfig);
 
         shop.setShopSize(shopConfig.getInt("shop_items_amount"));
-        shop.setRotatingShopTime(shopConfig.getBoolean("rotating_shop.enabled") ? shopConfig.getInt("rotating_shop.hours") : -1);
+        shop.setRotatingShopTime(shopConfig.getBoolean("dynamic_shop.enabled") ? shopConfig.getInt("dynamic_shop.hours") : -1);
 
+        // Loop through all items in the "shop_items" list in "dynamic_shop.yml" file
         for(String key : shopConfig.getConfigurationSection("shop_items").getKeys(false)) {
             ConfigurationSection section = shopConfig.getConfigurationSection("shop_items." + key);
 
@@ -100,12 +91,8 @@ public class ShopManager {
         dataFile.save();
     }
 
-    public void openRotatingShop(Player player) {
+    public void openDynamicShop(Player player) {
         shopGui.open(player, shop);
-    }
-
-    public void openSellGui(Player player) {
-        sellGui.open(player);
     }
 
     public SaveDynamicShop getPlugin() {
@@ -120,7 +107,7 @@ public class ShopManager {
         return purchaseSuccessItem;
     }
 
-    public BuyShop getBuyShop() {
+    public Shop getBuyShop() {
         return shop;
     }
 

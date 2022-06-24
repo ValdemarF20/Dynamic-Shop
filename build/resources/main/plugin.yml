@@ -1,10 +1,10 @@
-name: SaveRotatingShop
+name: SaveDynamicShop
 version: 1.0.0
-main: fun.lewisdev.saverotatingshop.SaveRotatingShopPlugin
+main: fun.lewisdev.saverotatingshop.SaveDynamicShop
 api-version: 1.18
-authors: [ItsLewizzz]
+authors: [ValdemarF]
 
-depend: [ProtocolLib]
+depend: [ProtocolLib, Vault]
 
 permissions:
   saverotatingshop.admin:

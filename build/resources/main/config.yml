@@ -1,7 +1,7 @@
 #
-# SaveRotatingShop
-# Author: Lewis D (ItsLewizzz)
-# Copyright (c) Lewis D 2022. All rights reserved.
+# SaveDynamicShop
+# Author: Valdemar F (ValdemarF)
+# Copyright (c) Valdemar F 2022. All rights reserved.
 #
 # Permissions
 #  Admin permission: saverotatingshop.admin
@@ -15,8 +15,8 @@ messages:
   reload: "&aThe plugin has been reloaded."
   help_message:
     - ""
-    - " &b&lSaveRotatingShop &7{VERSION}"
-    - " &7&oBy ItsLewizzz"
+    - " &b&lSaveDynamicShop &7{VERSION}"
+    - " &7&oBy Valdemar"
     - "&r"
     - " &7/shop &8- &fOpen shop."
     - " &7/shop help &8- &fView help message."

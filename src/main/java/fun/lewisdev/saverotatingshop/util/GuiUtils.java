@@ -2,7 +2,7 @@ package fun.lewisdev.saverotatingshop.util;
 
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
-import fun.lewisdev.saverotatingshop.shop.BuyShop;
+import fun.lewisdev.saverotatingshop.shop.Shop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -39,7 +39,7 @@ public class GuiUtils {
         }
     }
 
-    public static void setFillerItems(BaseGui gui, ConfigurationSection section, ShopManager shopManager, Player player, BuyShop shop) {
+    public static void setFillerItems(BaseGui gui, ConfigurationSection section, ShopManager shopManager, Player player, Shop shop) {
         if (section != null) {
             for (String entry : section.getKeys(false)) {
                 ConfigurationSection itemSection = section.getConfigurationSection(entry);
@@ -63,10 +63,6 @@ public class GuiUtils {
                 }
 
                 GuiItem guiItem = new GuiItem(builder.build());
-                if(itemSection.getBoolean("open_sell_gui")) {
-                    guiItem.setAction(event -> shopManager.openSellGui(player));
-                }
-
                 setSlot(gui, guiItem, itemSection);
             }
         }

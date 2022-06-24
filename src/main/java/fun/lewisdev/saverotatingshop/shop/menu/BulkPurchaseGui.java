@@ -3,7 +3,7 @@ package fun.lewisdev.saverotatingshop.shop.menu;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import fun.lewisdev.saverotatingshop.config.Messages;
-import fun.lewisdev.saverotatingshop.shop.BuyShop;
+import fun.lewisdev.saverotatingshop.shop.Shop;
 import fun.lewisdev.saverotatingshop.shop.ShopManager;
 import fun.lewisdev.saverotatingshop.shop.ShopReward;
 import fun.lewisdev.saverotatingshop.util.GuiUtils;
@@ -29,7 +29,7 @@ public class BulkPurchaseGui {
         this.signMenuFactory = new SignMenuFactory(shopManager.getPlugin());
     }
 
-    public void open(Player player, BuyShop shop, ShopReward shopReward) {
+    public void open(Player player, Shop shop, ShopReward shopReward) {
         ConfigurationSection config = shopManager.getPlugin().getConfig().getConfigurationSection("bulk_purchase_gui");
         Gui gui = new Gui(config.getInt("rows"), TextUtil.color(config.getString("title")));
 
@@ -39,10 +39,12 @@ public class BulkPurchaseGui {
         gui.setOpenGuiAction(event -> player.playSound(player.getLocation(), XSound.ENTITY_BAT_TAKEOFF.parseSound(), 1L, 0L));
 
         GuiItem goBackItem = new GuiItem(ItemStackBuilder.getItemStack(config.getConfigurationSection("go_back_item")).build());
-        goBackItem.setAction(event -> shopManager.openRotatingShop(player));
+        goBackItem.setAction(event -> shopManager.openDynamicShop(player));
         gui.setItem(config.getInt("go_back_item.slot"), goBackItem);
 
         Economy economy = shopManager.getPlugin().getEconomy();
+
+        // Defines what happens when clicked on custom amount item
         GuiItem customAmountItem = new GuiItem(ItemStackBuilder.getItemStack(config.getConfigurationSection("custom_amount_item")).build());
         customAmountItem.setAction(event -> {
 
@@ -84,6 +86,7 @@ public class BulkPurchaseGui {
         });
         gui.setItem(config.getInt("custom_amount_item.slot"), customAmountItem);
 
+        // Defines how many items are in every slot (and in which slots)
         for (String slot : config.getConfigurationSection("buy_item_slots").getKeys(false)) {
 
             ItemStack clone = shopReward.getDisplayItem().clone();
@@ -91,17 +94,20 @@ public class BulkPurchaseGui {
             long cost = shopReward.getCost() * amount;
 
             List<String> lore = new ArrayList<>();
+            // Updates the lore with proper format
             clone.getItemMeta().getLore().forEach(line -> lore.add(line.replace("{COST}", TextUtil.numberFormat(cost))));
             GuiItem guiItem = new GuiItem(new ItemStackBuilder(clone).withLore(lore).withAmount(Math.min(amount, 64)).build());
 
+            // Defines what happens when an purchasable item is clicked on
             guiItem.setAction(event -> {
-                if (economy.getBalance(player) >= cost) {
+                if (economy.getBalance(player) >= cost) { // Checks if the player has enough money
                     economy.withdrawPlayer(player, cost);
 
                     for (String command : shopReward.getCommands()) {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
                     }
 
+                    //TODO: Why is this run again? After running above
                     GuiUtils.setFillerItems(gui, config.getConfigurationSection("filler_items"), shopManager, player, shop);
                     gui.update();
 
@@ -112,7 +118,7 @@ public class BulkPurchaseGui {
                         event.getClickedInventory().setItem(event.getSlot(), previousItem);
                     }, 20L);
 
-                } else {
+                } else { // Runs when player cannot afford the item
                     ItemStack previousItem = event.getCurrentItem();
                     player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
                     event.getClickedInventory().setItem(event.getSlot(), shopManager.getNotEnoughCoinsItem());

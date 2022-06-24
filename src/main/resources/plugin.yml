@@ -1,7 +1,7 @@
-name: SaveRotatingShop
+name: SaveDynamicShop
 version: 1.0.0
 main: fun.lewisdev.saverotatingshop.SaveDynamicShop
-api-version: 1.18.2
+api-version: 1.18
 authors: [ValdemarF]
 
 depend: [ProtocolLib, Vault]
