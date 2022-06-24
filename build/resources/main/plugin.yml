@@ -1,6 +1,6 @@
 name: SaveDynamicShop
 version: 1.0.0
-main: fun.lewisdev.saverotatingshop.SaveDynamicShop
+main: fun.lewisdev.savedynamicshop.SaveDynamicShop
 api-version: 1.18
 authors: [ValdemarF]
 
