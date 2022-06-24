@@ -19,7 +19,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,12 +80,14 @@ public class ShopManager {
 
             int cost = section.getInt("cost");
             int sellPrice = section.getInt("sell_price");
-            plugin.getLogger().info("Sell price at creation: " + sellPrice);
+            long minPrice = section.getInt("sell_min");
+            long maxPrice = section.getInt("sell_max");
+            double ratio = section.getDouble("multiplier");
             List<String> commands = section.getStringList("commands");
             boolean bulkBuy = section.getBoolean("bulk_buy", true);
 
             ItemStackBuilder builder = ItemStackBuilder.getItemStack(section);
-            shop.addReward(key, new ShopReward(key, builder.build(), commands, cost, sellPrice, bulkBuy));
+            shop.addReward(key, new ShopReward(key, builder.build(), commands, cost, sellPrice, minPrice, maxPrice, ratio, bulkBuy));
         }
 
         final FileConfiguration dataConfig = dataFile.getConfig();
@@ -144,7 +147,7 @@ public class ShopManager {
      * @param gui Gui that is open where the item is purchased
      * @param config Config file used to find filler-items
      */
-    public boolean handleInventoryAction(Player player, ShopReward reward, GuiItem guiItem, Shop shop, Gui gui, ConfigurationSection config) {
+    public void handleInventoryAction(Player player, ShopReward reward, GuiItem guiItem, Shop shop, Gui gui, ConfigurationSection config) {
         AtomicBoolean itemSold = new AtomicBoolean(false);
         guiItem.setAction(event -> {
             if (reward.getCost() < 0) return;
@@ -157,12 +160,24 @@ public class ShopManager {
             } else if(clickType == ClickType.LEFT) { // Left click is used to purchase
                 // Check if the player can afford the item
                 if (economy.getBalance(player) >= reward.getCost()) {
-                    economy.withdrawPlayer(player, reward.getCost());
+                    BigDecimal cost = BigDecimal.valueOf(0);
+
+                    BigDecimal tempCost = BigDecimal.valueOf(reward.getCost());
+                    BigDecimal tempSellPrice = BigDecimal.valueOf(reward.getSellPrice());
 
                     // Run all commands attached to the item / reward
                     for (String command : reward.getCommands()) {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
                     }
+
+                    for(int i = 0; i <= amount; i++) {
+                        tempCost = tempCost.multiply(BigDecimal.valueOf(reward.getMultiplier()));
+                        tempSellPrice = tempSellPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
+
+                        cost = cost.add(tempCost);
+                    }
+                    reward.setCost(tempCost.doubleValue());
+                    reward.setSellPrice(tempSellPrice.doubleValue());
 
                     //TODO: Why are the filler items updated again?
                     GuiUtils.setFillerItems(gui, config.getConfigurationSection("gui.filler_items"), this, player, shop);
@@ -179,6 +194,11 @@ public class ShopManager {
                         event.getClickedInventory().setItem(event.getSlot(), previousItem);
                     }, 20L);
 
+                    player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.bulk_purchase_success").toString()
+                            .replace("{AMOUNT}", String.valueOf(amount))
+                            .replace("{COST}", String.valueOf(TextUtil.numberFormat(cost.doubleValue())))));
+                    economy.withdrawPlayer(player, cost.doubleValue());
+
                 } else { // Will run if the player cannot afford the item
                     ItemStack previousItem = event.getCurrentItem();
                     player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
@@ -186,47 +206,62 @@ public class ShopManager {
                     Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> event.getClickedInventory().setItem(event.getSlot(), previousItem), 45L);
                 }
             } else if(clickType == ClickType.RIGHT) {
-                // Needed to track how many more should be sold
-                int leftToSell = amount;
                 itemSold.set(false);
+                // Amount of money to be deposited
+                BigDecimal sold = BigDecimal.valueOf(0);
                 // Amount of the item located in the player inventory
                 int itemsSold = 0;
+
+                BigDecimal tempCost = BigDecimal.valueOf(reward.getCost());
+                BigDecimal tempSellPrice = BigDecimal.valueOf(reward.getSellPrice());
 
                 if(player.getInventory().isEmpty()) {
                     return;
                 }
-
-                ItemStack[] contents = player.getInventory().getContents();
-
-                for (ItemStack item : contents) {
+                for (ItemStack item : player.getInventory()) {
                     if(item == null) {
                         continue;
+                    } else if(itemSold.get()) {
+                        break;
                     }
+                    //TODO: All items are selling at once, ignoring amount (64)
                     if(item.getType().equals(reward.getDisplayItem().getType())) {
                         if(amount >= item.getAmount()) { // Item in the shop has a greater or equal to amount
+                            for(int i = 0; i <= item.getAmount(); i++) {
+                                sold = sold.add(tempSellPrice);
+
+                                tempCost = tempCost.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                            }
                             itemsSold+=item.getAmount();
                             player.getInventory().remove(item);
+
                         } else { // Item in the inventory has a higher amount than in the shop
+                            for(int i = 0; i <= amount; i++) {
+                                sold = sold.add(tempSellPrice);
+
+                                tempCost = tempCost.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                            }
+
                             itemsSold+=amount;
                             item.setAmount(item.getAmount() - amount);
                         }
                         itemSold.set(true);
                     }
                 }
+                reward.setCost(tempCost.doubleValue());
+                reward.setSellPrice(tempSellPrice.doubleValue());
 
                 if(itemSold.get()) {
-                    long sold = (itemsSold) * reward.getSellPrice();
-                    logger.info("Sell price: " + reward.getSellPrice());
-                    logger.info("Amount: " + itemsSold);
-                    economy.depositPlayer(player, sold);
+                    economy.depositPlayer(player, sold.doubleValue());
                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.sell_success").toString()
                             .replace("{AMOUNT}", String.valueOf(itemsSold))
-                            .replace("{SOLD}", String.valueOf(sold))));
+                            .replace("{SOLD}", String.valueOf(TextUtil.numberFormat(sold.doubleValue())))));
                 } else {
                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.sell_no_item").toString()));
                 }
             }
         });
-        return itemSold.get();
     }
 }

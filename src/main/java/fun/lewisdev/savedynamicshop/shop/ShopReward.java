@@ -9,16 +9,22 @@ public class ShopReward {
     private final String identifier;
     private final ItemStack displayItem;
     private final List<String> commands;
-    private final long cost;
-    private final long sellPrice;
+    private double cost;
+    private double sellPrice;
     private final boolean allowBulkBuy;
+    private final long minPrice;
+    private final long maxPrice;
+    private double multiplier;
 
-    public ShopReward(String identifier, ItemStack displayItem, List<String> commands, long cost, long sellPrice, boolean allowBulkBuy) {
+    public ShopReward(String identifier, ItemStack displayItem, List<String> commands, double cost, double sellPrice, long minPrice, long maxPrice, double multiplier, boolean allowBulkBuy) {
         this.identifier = identifier;
         this.displayItem = displayItem;
         this.commands = commands;
         this.cost = cost;
         this.sellPrice = sellPrice;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+        this.multiplier = multiplier;
         this.allowBulkBuy = allowBulkBuy;
     }
 
@@ -34,12 +40,32 @@ public class ShopReward {
         return commands;
     }
 
-    public long getCost() {
+    public double getCost() {
         return cost;
     }
 
-    public long getSellPrice() {
+    public double getSellPrice() {
         return sellPrice;
+    }
+
+    public long getMinPrice() {
+        return minPrice;
+    }
+
+    public long getMaxPrice() {
+        return maxPrice;
+    }
+
+    public double getMultiplier() {
+        return multiplier;
+    }
+
+    public void setCost(double n) {
+        this.cost = n;
+    }
+
+    public void setSellPrice(double n) {
+        this.sellPrice = n;
     }
 
     public boolean isAllowBulkBuy() {

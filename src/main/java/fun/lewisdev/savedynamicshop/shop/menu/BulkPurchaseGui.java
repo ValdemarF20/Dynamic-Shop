@@ -61,7 +61,7 @@ public class BulkPurchaseGui {
                             return false;
                         }
 
-                        long cost = shopReward.getCost() * amount;
+                        double cost = shopReward.getCost() * amount;
                         if (economy.getBalance(player) >= cost) {
                             economy.withdrawPlayer(player, cost);
 
@@ -92,7 +92,7 @@ public class BulkPurchaseGui {
 
             ItemStack clone = shopReward.getDisplayItem().clone();
             int amount = config.getInt("buy_item_slots." + slot);
-            long cost = shopReward.getCost() * amount;
+            double cost = shopReward.getCost() * amount;
 
             List<String> lore = new ArrayList<>();
             // Updates the lore with proper format

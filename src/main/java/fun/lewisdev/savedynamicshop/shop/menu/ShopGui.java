@@ -37,7 +37,7 @@ public class ShopGui {
 
         gui.setOpenGuiAction(event -> player.playSound(player.getLocation(), XSound.ENTITY_BAT_TAKEOFF.parseSound(), 1L, 0L));
 
-        ShopReward errorItem = new ShopReward("error", new ItemStackBuilder(Material.BARRIER).withName("&c&lINVALID SHOP ITEM").withLore(Arrays.asList("&fThis item no longer exists", "&fin the configuration. Please", "&frun &6/mobcoins refresh")).build(), Collections.emptyList(), -999, 0, false);
+        ShopReward errorItem = new ShopReward("error", new ItemStackBuilder(Material.BARRIER).withName("&c&lINVALID SHOP ITEM").withLore(Arrays.asList("&fThis item no longer exists", "&fin the configuration. Please", "&frun &6/mobcoins refresh")).build(), Collections.emptyList(), -999, 0, 0, 0, 0, false);
         List<ShopReward> rewardList = shop.getActiveRewards().stream().map(identifier -> shop.getRewards().getOrDefault(identifier, errorItem)).collect(Collectors.toList());
         for (ShopReward reward : rewardList) {
             List<String> lore = new ArrayList<>();
