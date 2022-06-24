@@ -56,6 +56,7 @@ shop_items:
       - "&eRight-Click to sell"
       - "&ePress Q for bulk buy"
     cost: 10
+    sell_price: 10
     commands:
       - "give {PLAYER} DIAMOND_SWORD {AMOUNT}"
     bulk_buy: true

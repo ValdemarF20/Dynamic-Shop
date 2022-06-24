@@ -100,35 +100,6 @@ public class BulkPurchaseGui {
 
             GuiItem guiItem = new GuiItem(new ItemStackBuilder(clone).withLore(lore).withAmount(Math.min(amount, 64)).build());
             shopManager.handleInventoryAction(player, shopReward, guiItem, shop, gui, config);
-            /*
-            // Defines what happens when an purchasable item is clicked on
-            guiItem.setAction(event -> {
-                if (economy.getBalance(player) >= cost) { // Checks if the player has enough money
-                    economy.withdrawPlayer(player, cost);
-
-                    for (String command : shopReward.getCommands()) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
-                    }
-
-                    //TODO: Why is this run again? After running above
-                    GuiUtils.setFillerItems(gui, config.getConfigurationSection("filler_items"), shopManager, player, shop);
-                    gui.update();
-
-                    ItemStack previousItem = event.getCurrentItem();
-                    player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
-                    event.getClickedInventory().setItem(event.getSlot(), shopManager.getPurchaseSuccessItem());
-                    Bukkit.getScheduler().runTaskLater(shopManager.getPlugin(), () -> {
-                        event.getClickedInventory().setItem(event.getSlot(), previousItem);
-                    }, 20L);
-
-                } else { // Runs when player cannot afford the item
-                    ItemStack previousItem = event.getCurrentItem();
-                    player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
-                    event.getClickedInventory().setItem(event.getSlot(), shopManager.getNotEnoughCoinsItem());
-                    Bukkit.getScheduler().runTaskLater(shopManager.getPlugin(), () -> event.getClickedInventory().setItem(event.getSlot(), previousItem), 45L);
-                }
-            });
-             */
             gui.setItem(Integer.parseInt(slot), guiItem);
         }
 

@@ -63,6 +63,4 @@ public class TextUtil {
         else if(minutes > 0) return String.format("%02dm %02ds", minutes, sec);
         return String.format("%02ds", sec);
     }
-
-
 }

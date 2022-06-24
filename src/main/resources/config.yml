@@ -28,6 +28,7 @@ messages:
 
   sell_success: "&7You have sold x{AMOUNT} items for &6${SOLD}&7."
   sell_returned: "&cSome items have been returned as they could not be sold."
+  sell_no_item: "&cYou do not have this item"
 
   bulk_purchase_no_funds: "&7You don't have enough money to purchase. You need &6${AMOUNT}&7."
   bulk_purchase_invalid_input: "&cThat's not a valid amount."

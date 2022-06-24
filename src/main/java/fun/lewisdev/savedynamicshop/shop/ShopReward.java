@@ -10,13 +10,15 @@ public class ShopReward {
     private final ItemStack displayItem;
     private final List<String> commands;
     private final long cost;
+    private final long sellPrice;
     private final boolean allowBulkBuy;
 
-    public ShopReward(String identifier, ItemStack displayItem, List<String> commands, long cost, boolean allowBulkBuy) {
+    public ShopReward(String identifier, ItemStack displayItem, List<String> commands, long cost, long sellPrice, boolean allowBulkBuy) {
         this.identifier = identifier;
         this.displayItem = displayItem;
         this.commands = commands;
         this.cost = cost;
+        this.sellPrice = sellPrice;
         this.allowBulkBuy = allowBulkBuy;
     }
 
@@ -34,6 +36,10 @@ public class ShopReward {
 
     public long getCost() {
         return cost;
+    }
+
+    public long getSellPrice() {
+        return sellPrice;
     }
 
     public boolean isAllowBulkBuy() {
