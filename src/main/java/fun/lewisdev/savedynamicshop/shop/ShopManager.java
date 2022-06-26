@@ -158,51 +158,49 @@ public class ShopManager {
             if ((clickType == ClickType.DROP || clickType == ClickType.CONTROL_DROP) && reward.isAllowBulkBuy()) {
                 bulkPurchaseGui.open(player, shop, reward);
             } else if(clickType == ClickType.LEFT) { // Left click is used to purchase
-                // Check if the player can afford the item
-                if (economy.getBalance(player) >= reward.getCost()) {
-                    BigDecimal cost = BigDecimal.valueOf(0);
 
-                    BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost());
+                BigDecimal cost = BigDecimal.valueOf(0);
+                BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost());
 
-                    // Run all commands attached to the item / reward
-                    for (String command : reward.getCommands()) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
+                for(int i = 1; i <= amount; i++) {
+                    cost = cost.add(tempPrice);
+
+                    tempPrice = tempPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
                     }
 
-                    for(int i = 1; i <= amount; i++) {
-                        cost = cost.add(tempPrice);
+                 if (economy.getBalance(player) >= cost.doubleValue()) {
+                     reward.setCost(tempPrice.doubleValue());
 
-                        tempPrice = tempPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
-                    }
-                    reward.setCost(tempPrice.doubleValue());
+                     // Run all commands attached to the item / reward
+                     for (String command : reward.getCommands()) {
+                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
+                     }
 
-                    //TODO: Why are the filler items updated again?
-                    GuiUtils.setFillerItems(gui, config.getConfigurationSection("gui.filler_items"), this, player, shop);
-                    gui.update();
+                     GuiUtils.setFillerItems(gui, config.getConfigurationSection("gui.filler_items"), this, player, shop);
+                     gui.update();
 
-                    // Get the previous item to reset the item after confirmation item
-                    ItemStack previousItem = event.getCurrentItem();
-                    // Play a success sound
-                    player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
-                    // Sets the item that appears in a short amount of time after purchasing (confirmation item)
-                    event.getClickedInventory().setItem(event.getSlot(), this.getPurchaseSuccessItem());
-                    // Sets the previous item (item that has been bought) again, to remove confirmation item
-                    Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> {
-                        event.getClickedInventory().setItem(event.getSlot(), previousItem);
-                    }, 20L);
+                     // Get the previous item to reset the item after confirmation item
+                     ItemStack previousItem = event.getCurrentItem();
+                     // Play a success sound
+                     player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
+                     // Sets the item that appears in a short amount of time after purchasing (confirmation item)
+                     event.getClickedInventory().setItem(event.getSlot(), this.getPurchaseSuccessItem());
+                     // Sets the previous item (item that has been bought) again, to remove confirmation item
+                     Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> {
+                         event.getClickedInventory().setItem(event.getSlot(), previousItem);
+                     }, 20L);
 
-                    player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.bulk_purchase_success").toString()
-                            .replace("{AMOUNT}", String.valueOf(amount))
-                            .replace("{COST}", String.valueOf(TextUtil.numberFormat(cost.doubleValue())))));
-                    economy.withdrawPlayer(player, cost.doubleValue());
-                    gui.update();
-
-                } else { // Will run if the player cannot afford the item
-                    ItemStack previousItem = event.getCurrentItem();
-                    player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
-                    event.getClickedInventory().setItem(event.getSlot(), this.getNotEnoughCoinsItem());
-                    Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> event.getClickedInventory().setItem(event.getSlot(), previousItem), 45L);
-                }
+                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.bulk_purchase_success").toString()
+                             .replace("{AMOUNT}", String.valueOf(amount))
+                             .replace("{COST}", String.valueOf(TextUtil.numberFormat(cost.doubleValue())))));
+                     economy.withdrawPlayer(player, cost.doubleValue());
+                     gui.update();
+                 } else { // Will run if the player cannot afford the item
+                     ItemStack previousItem = event.getCurrentItem();
+                     player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
+                     event.getClickedInventory().setItem(event.getSlot(), this.getNotEnoughCoinsItem());
+                     Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> event.getClickedInventory().setItem(event.getSlot(), previousItem), 45L);
+                 }
             } else if(clickType == ClickType.RIGHT) {
                 itemSold.set(false);
                 // Amount of money to be deposited
@@ -211,7 +209,7 @@ public class ShopManager {
                 int itemsSold = 0;
 
                 BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost()); // Used to update the cost properly
-                BigDecimal tempSellPrice = BigDecimal.valueOf(reward.getCost()).divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
+                BigDecimal tempSellPrice = tempPrice.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
 
                 if(player.getInventory().isEmpty()) {
                     return;
@@ -220,10 +218,8 @@ public class ShopManager {
                     if(item == null) {
                         continue;
                     } else if(itemSold.get()) {
-                        logger.info("ItemSold was true, breaking");
                         break;
                     }
-                    //TODO: All items are selling at once, ignoring amount (64)
                     if(item.getType().equals(reward.getDisplayItem().getType())) {
                         if(amount >= item.getAmount()) { // Item in the shop has a greater or equal to amount
                             for(int i = 1; i <= item.getAmount(); i++) {
@@ -246,7 +242,6 @@ public class ShopManager {
                             itemsSold+=amount;
                             item.setAmount(item.getAmount() - amount);
                         }
-                        logger.info("ItemSold set to true");
                         itemSold.set(true);
                     }
                 }
