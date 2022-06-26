@@ -45,7 +45,7 @@ public class ShopReward {
     }
 
     public double getSellPrice() {
-        return sellPrice;
+        return (cost / 2);
     }
 
     public long getMinPrice() {
@@ -62,10 +62,6 @@ public class ShopReward {
 
     public void setCost(double n) {
         this.cost = n;
-    }
-
-    public void setSellPrice(double n) {
-        this.sellPrice = n;
     }
 
     public boolean isAllowBulkBuy() {

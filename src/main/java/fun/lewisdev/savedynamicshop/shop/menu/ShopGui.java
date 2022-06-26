@@ -9,12 +9,9 @@ import fun.lewisdev.savedynamicshop.util.GuiUtils;
 import fun.lewisdev.savedynamicshop.util.ItemStackBuilder;
 import fun.lewisdev.savedynamicshop.util.TextUtil;
 import fun.lewisdev.savedynamicshop.util.universal.XSound;
-import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -42,9 +39,11 @@ public class ShopGui {
         for (ShopReward reward : rewardList) {
             List<String> lore = new ArrayList<>();
             ItemStack displayItem =reward.getDisplayItem();
-            // Replace {COST} and {DROP} placeholders
+            // Replace placeholders
             if(displayItem.hasItemMeta() && displayItem.getItemMeta().hasLore()) {
-                displayItem.getItemMeta().getLore().forEach(line -> lore.add(line.replace("{COST}", String.valueOf(reward.getCost()))));
+                displayItem.getItemMeta().getLore().forEach(line -> lore.add(line
+                        .replace("{COST}", TextUtil.numberFormat(reward.getCost()))
+                        .replace("{SELL_PRICE}", TextUtil.numberFormat(reward.getSellPrice()))));
             }
 
             GuiItem guiItem = new GuiItem(new ItemStackBuilder(displayItem.clone()).withLore(lore).build());

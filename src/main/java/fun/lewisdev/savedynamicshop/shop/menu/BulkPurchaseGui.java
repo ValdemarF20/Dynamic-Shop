@@ -14,7 +14,6 @@ import fun.lewisdev.savedynamicshop.util.universal.XSound;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -93,10 +92,13 @@ public class BulkPurchaseGui {
             ItemStack clone = shopReward.getDisplayItem().clone();
             int amount = config.getInt("buy_item_slots." + slot);
             double cost = shopReward.getCost() * amount;
+            double sellPrice = shopReward.getSellPrice() * amount;
 
             List<String> lore = new ArrayList<>();
             // Updates the lore with proper format
-            clone.getItemMeta().getLore().forEach(line -> lore.add(line.replace("{COST}", TextUtil.numberFormat(cost))));
+            clone.getItemMeta().getLore().forEach(line -> lore.add(line
+                    .replace("{COST}", TextUtil.numberFormat(cost))
+                    .replace("{SELL_PRICE}", TextUtil.numberFormat(sellPrice))));
 
             GuiItem guiItem = new GuiItem(new ItemStackBuilder(clone).withLore(lore).withAmount(Math.min(amount, 64)).build());
             shopManager.handleInventoryAction(player, shopReward, guiItem, shop, gui, config);

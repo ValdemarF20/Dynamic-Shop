@@ -162,22 +162,19 @@ public class ShopManager {
                 if (economy.getBalance(player) >= reward.getCost()) {
                     BigDecimal cost = BigDecimal.valueOf(0);
 
-                    BigDecimal tempCost = BigDecimal.valueOf(reward.getCost());
-                    BigDecimal tempSellPrice = BigDecimal.valueOf(reward.getSellPrice());
+                    BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost());
 
                     // Run all commands attached to the item / reward
                     for (String command : reward.getCommands()) {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
                     }
 
-                    for(int i = 0; i <= amount; i++) {
-                        tempCost = tempCost.multiply(BigDecimal.valueOf(reward.getMultiplier()));
-                        tempSellPrice = tempSellPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
+                    for(int i = 1; i <= amount; i++) {
+                        cost = cost.add(tempPrice);
 
-                        cost = cost.add(tempCost);
+                        tempPrice = tempPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
                     }
-                    reward.setCost(tempCost.doubleValue());
-                    reward.setSellPrice(tempSellPrice.doubleValue());
+                    reward.setCost(tempPrice.doubleValue());
 
                     //TODO: Why are the filler items updated again?
                     GuiUtils.setFillerItems(gui, config.getConfigurationSection("gui.filler_items"), this, player, shop);
@@ -198,6 +195,7 @@ public class ShopManager {
                             .replace("{AMOUNT}", String.valueOf(amount))
                             .replace("{COST}", String.valueOf(TextUtil.numberFormat(cost.doubleValue())))));
                     economy.withdrawPlayer(player, cost.doubleValue());
+                    gui.update();
 
                 } else { // Will run if the player cannot afford the item
                     ItemStack previousItem = event.getCurrentItem();
@@ -212,8 +210,8 @@ public class ShopManager {
                 // Amount of the item located in the player inventory
                 int itemsSold = 0;
 
-                BigDecimal tempCost = BigDecimal.valueOf(reward.getCost());
-                BigDecimal tempSellPrice = BigDecimal.valueOf(reward.getSellPrice());
+                BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost()); // Used to update the cost properly
+                BigDecimal tempSellPrice = BigDecimal.valueOf(reward.getCost()).divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
 
                 if(player.getInventory().isEmpty()) {
                     return;
@@ -222,42 +220,45 @@ public class ShopManager {
                     if(item == null) {
                         continue;
                     } else if(itemSold.get()) {
+                        logger.info("ItemSold was true, breaking");
                         break;
                     }
                     //TODO: All items are selling at once, ignoring amount (64)
                     if(item.getType().equals(reward.getDisplayItem().getType())) {
                         if(amount >= item.getAmount()) { // Item in the shop has a greater or equal to amount
-                            for(int i = 0; i <= item.getAmount(); i++) {
-                                sold = sold.add(tempSellPrice);
-
-                                tempCost = tempCost.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                            for(int i = 1; i <= item.getAmount(); i++) {
                                 tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+
+                                sold = sold.add(tempSellPrice);
                             }
                             itemsSold+=item.getAmount();
-                            player.getInventory().remove(item);
+                            item.setAmount(0);
 
                         } else { // Item in the inventory has a higher amount than in the shop
-                            for(int i = 0; i <= amount; i++) {
-                                sold = sold.add(tempSellPrice);
-
-                                tempCost = tempCost.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                            for(int i = 1; i <= amount; i++) {
                                 tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+
+                                sold = sold.add(tempSellPrice);
                             }
 
                             itemsSold+=amount;
                             item.setAmount(item.getAmount() - amount);
                         }
+                        logger.info("ItemSold set to true");
                         itemSold.set(true);
                     }
                 }
-                reward.setCost(tempCost.doubleValue());
-                reward.setSellPrice(tempSellPrice.doubleValue());
+                reward.setCost(tempPrice.doubleValue());
 
                 if(itemSold.get()) {
                     economy.depositPlayer(player, sold.doubleValue());
                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.sell_success").toString()
                             .replace("{AMOUNT}", String.valueOf(itemsSold))
                             .replace("{SOLD}", String.valueOf(TextUtil.numberFormat(sold.doubleValue())))));
+                    gui.update();
+
                 } else {
                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.sell_no_item").toString()));
                 }
