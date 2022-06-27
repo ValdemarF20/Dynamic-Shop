@@ -47,7 +47,7 @@ public class ShopGui {
             }
 
             GuiItem guiItem = new GuiItem(new ItemStackBuilder(displayItem.clone()).withLore(lore).build());
-            shopManager.handleInventoryAction(player, reward, guiItem, shop, gui, config);
+            shopManager.handleInventoryAction(player, reward, guiItem, shop, gui, config, "shop");
             gui.addItem(guiItem);
         }
 

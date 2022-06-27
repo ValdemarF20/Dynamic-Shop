@@ -10,6 +10,7 @@ import fun.lewisdev.savedynamicshop.util.GuiUtils;
 import fun.lewisdev.savedynamicshop.util.ItemStackBuilder;
 import fun.lewisdev.savedynamicshop.util.TextUtil;
 import fun.lewisdev.savedynamicshop.util.universal.XSound;
+import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -17,14 +18,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ShopManager {
 
@@ -36,6 +40,7 @@ public class ShopManager {
 
     private Shop shop;
     private ShopGui shopGui;
+    private FileConfiguration shopConfig;
 
     private Map<Material, Double> sellItems;
 
@@ -52,7 +57,6 @@ public class ShopManager {
     public void onEnable() {
         final FileConfiguration config = plugin.getConfig();
 
-        //TODO: shopdata.yml usage?
         dataFile = new ConfigHandler(plugin, "shopdata");
         dataFile.saveDefaultConfig();
 
@@ -67,7 +71,7 @@ public class ShopManager {
         ConfigHandler shopConfigHandler = new ConfigHandler(plugin, "shops/dynamic_shop.yml");
         shopConfigHandler.saveDefaultConfig();
         // Gets the FileConfiguration from the handler
-        FileConfiguration shopConfig = shopConfigHandler.getConfig();
+        shopConfig = shopConfigHandler.getConfig();
         // Initializes the GUI
         shop = new Shop(shopConfig);
 
@@ -146,8 +150,9 @@ public class ShopManager {
      * @param shop Shop that is being used (currently only one type shop)
      * @param gui Gui that is open where the item is purchased
      * @param config Config file used to find filler-items
+     * @param identifier
      */
-    public void handleInventoryAction(Player player, ShopReward reward, GuiItem guiItem, Shop shop, Gui gui, ConfigurationSection config) {
+    public void handleInventoryAction(Player player, ShopReward reward, GuiItem guiItem, Shop shop, Gui gui, ConfigurationSection config, String identifier) {
         AtomicBoolean itemSold = new AtomicBoolean(false);
         guiItem.setAction(event -> {
             if (reward.getCost() < 0) return;
@@ -168,39 +173,95 @@ public class ShopManager {
                     tempPrice = tempPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
                     }
 
-                 if (economy.getBalance(player) >= cost.doubleValue()) {
-                     reward.setCost(tempPrice.doubleValue());
+                if (economy.getBalance(player) >= cost.doubleValue()) {
+                    reward.setCost(tempPrice.doubleValue());
 
-                     // Run all commands attached to the item / reward
-                     for (String command : reward.getCommands()) {
-                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
-                     }
+                    // Run all commands attached to the item / reward
+                    for (String command : reward.getCommands()) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
+                    }
 
-                     GuiUtils.setFillerItems(gui, config.getConfigurationSection("gui.filler_items"), this, player, shop);
+                    GuiUtils.setFillerItems(gui, config.getConfigurationSection("gui.filler_items"), this, player, shop);
+                    gui.update();
+
+                    // Play a success sound
+                    player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
+
+                    player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.bulk_purchase_success").toString()
+                            .replace("{AMOUNT}", String.valueOf(amount))
+                            .replace("{COST}", String.valueOf(TextUtil.numberFormat(cost.doubleValue())))));
+                    economy.withdrawPlayer(player, cost.doubleValue());
+
+                    Set<String> buySlots = plugin.getConfig().getConfigurationSection("bulk_purchase_gui.buy_item_slots").getKeys(false);
+                    boolean mainShop = false;
+                    if(identifier.equals("shop")) { // Player is buying from the main page instead of bulk page
+                        buySlots = shopConfig.getConfigurationSection("shop_items").getKeys(false);
+                        mainShop = true;
+                    }
+                    // Update lore's in GUI
+                    for (String slotStr : buySlots) {
+                        int slot = -1;
+                        try {
+                            slot = Integer.parseInt(slotStr);
+                        } catch(NumberFormatException e) {
+                            logger.log(Level.SEVERE, "A slot from config.yml or dynamic_shop.yml cannot be parsed to an integer");
+                        }
+                        if(slot == -1) {
+                            continue;
+                        }
+
+                        ItemStack clone = reward.getDisplayItem().clone();
+                        ItemMeta meta = clone.getItemMeta();
+
+                        if(!clone.hasItemMeta() || !meta.hasLore()) {
+                            return;
+                        }
+
+                        // Update the prices to update lore
+                        BigDecimal calcTotalCost = BigDecimal.valueOf(0);
+                        BigDecimal calcTotalSellPrice = BigDecimal.valueOf(0);
+                        BigDecimal calcCost = BigDecimal.valueOf(reward.getCost());
+                        BigDecimal calcSellPrice = calcCost.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
+
+                        int newAmount = 1;
+
+                        if(!mainShop) {
+                            newAmount = config.getInt("buy_item_slots." + slot);
+                            double multiplier = reward.getMultiplier();
+
+                            for(int i = 1; i <= newAmount; i++) {
+                                calcTotalCost = calcTotalCost.add(calcCost);
+                                calcTotalSellPrice = calcTotalSellPrice.add(calcSellPrice);
+
+                                calcCost = calcCost.multiply(BigDecimal.valueOf(multiplier));
+                                calcSellPrice = calcSellPrice.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
+                            }
+                        } else {
+                            calcTotalCost = calcCost;
+                            calcTotalSellPrice = calcSellPrice;
+                        }
+
+                        List<String> lore = new ArrayList<>();
+                        // Updates the lore with proper format
+                        for (String line : meta.getLore()) {
+                            lore.add(line
+                                    .replace("{COST}", TextUtil.numberFormat(calcTotalCost.doubleValue()))
+                                    .replace("{SELL_PRICE}", TextUtil.numberFormat(calcTotalSellPrice.doubleValue())));
+                        }
+                        clone = new ItemStackBuilder(clone).withLore(lore).withAmount(Math.min(newAmount, 64)).build();
+
+                        if(mainShop) {
+                            slot = getSlot(clone.getType(), gui.getInventory());
+                        }
+                        gui.updateItem(slot, clone);
+                    }
                      gui.update();
-
-                     // Get the previous item to reset the item after confirmation item
-                     ItemStack previousItem = event.getCurrentItem();
-                     // Play a success sound
-                     player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
-                     // Sets the item that appears in a short amount of time after purchasing (confirmation item)
-                     event.getClickedInventory().setItem(event.getSlot(), this.getPurchaseSuccessItem());
-                     // Sets the previous item (item that has been bought) again, to remove confirmation item
-                     Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> {
-                         event.getClickedInventory().setItem(event.getSlot(), previousItem);
-                     }, 20L);
-
-                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.bulk_purchase_success").toString()
-                             .replace("{AMOUNT}", String.valueOf(amount))
-                             .replace("{COST}", String.valueOf(TextUtil.numberFormat(cost.doubleValue())))));
-                     economy.withdrawPlayer(player, cost.doubleValue());
-                     gui.update();
-                 } else { // Will run if the player cannot afford the item
+                } else { // Will run if the player cannot afford the item
                      ItemStack previousItem = event.getCurrentItem();
                      player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
                      event.getClickedInventory().setItem(event.getSlot(), this.getNotEnoughCoinsItem());
                      Bukkit.getScheduler().runTaskLater(this.getPlugin(), () -> event.getClickedInventory().setItem(event.getSlot(), previousItem), 45L);
-                 }
+                }
             } else if(clickType == ClickType.RIGHT) {
                 itemSold.set(false);
                 // Amount of money to be deposited
@@ -223,20 +284,20 @@ public class ShopManager {
                     if(item.getType().equals(reward.getDisplayItem().getType())) {
                         if(amount >= item.getAmount()) { // Item in the shop has a greater or equal to amount
                             for(int i = 1; i <= item.getAmount(); i++) {
+                                sold = sold.add(tempSellPrice);
+
                                 tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
                                 tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
-
-                                sold = sold.add(tempSellPrice);
                             }
                             itemsSold+=item.getAmount();
                             item.setAmount(0);
 
                         } else { // Item in the inventory has a higher amount than in the shop
                             for(int i = 1; i <= amount; i++) {
+                                sold = sold.add(tempSellPrice);
+
                                 tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
                                 tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
-
-                                sold = sold.add(tempSellPrice);
                             }
 
                             itemsSold+=amount;
@@ -248,10 +309,78 @@ public class ShopManager {
                 reward.setCost(tempPrice.doubleValue());
 
                 if(itemSold.get()) {
+                    // Play a success sound
+                    player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
+
                     economy.depositPlayer(player, sold.doubleValue());
                     player.sendMessage(TextUtil.color(plugin.getConfig().get("messages.sell_success").toString()
                             .replace("{AMOUNT}", String.valueOf(itemsSold))
                             .replace("{SOLD}", String.valueOf(TextUtil.numberFormat(sold.doubleValue())))));
+
+                    Set<String> buySlots = plugin.getConfig().getConfigurationSection("bulk_purchase_gui.buy_item_slots").getKeys(false);
+                    boolean mainShop = false;
+                    if(identifier.equals("shop")) { // Player is buying from the main page instead of bulk page
+                        buySlots = shopConfig.getConfigurationSection("shop_items").getKeys(false);
+                        mainShop = true;
+                    }
+                    // Update lore's in GUI
+                    for (String slotStr : buySlots) {
+                        int slot = -1;
+                        try {
+                            slot = Integer.parseInt(slotStr);
+                        } catch(NumberFormatException e) {
+                            logger.log(Level.SEVERE, "A slot from config.yml or dynamic_shop.yml cannot be parsed to an integer");
+                        }
+                        if(slot == -1) {
+                            continue;
+                        }
+
+                        ItemStack clone = reward.getDisplayItem().clone();
+                        ItemMeta meta = clone.getItemMeta();
+
+                        if(!clone.hasItemMeta() || !meta.hasLore()) {
+                            return;
+                        }
+
+                        // Update the prices to update lore
+                        BigDecimal calcTotalCost = BigDecimal.valueOf(0);
+                        BigDecimal calcTotalSellPrice = BigDecimal.valueOf(0);
+                        BigDecimal calcCost = BigDecimal.valueOf(reward.getCost());
+                        BigDecimal calcSellPrice = calcCost.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
+
+                        int newAmount = 1;
+
+                        if(!mainShop) {
+                            newAmount = config.getInt("buy_item_slots." + slot);
+                            double multiplier = reward.getMultiplier();
+
+                            for(int i = 1; i <= newAmount; i++) {
+                                calcTotalCost = calcTotalCost.add(calcCost);
+                                calcTotalSellPrice = calcTotalSellPrice.add(calcSellPrice);
+
+                                calcCost = calcCost.multiply(BigDecimal.valueOf(multiplier));
+                                calcSellPrice = calcSellPrice.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
+                            }
+                        } else {
+                            calcTotalCost = calcCost;
+                            calcTotalSellPrice = calcSellPrice;
+                        }
+
+                        List<String> lore = new ArrayList<>();
+                        // Updates the lore with proper format
+                        for (String line : meta.getLore()) {
+                            lore.add(line
+                                    .replace("{COST}", TextUtil.numberFormat(calcTotalCost.doubleValue()))
+                                    .replace("{SELL_PRICE}", TextUtil.numberFormat(calcTotalSellPrice.doubleValue())));
+                        }
+
+                        clone = new ItemStackBuilder(clone).withLore(lore).withAmount(Math.min(newAmount, 64)).build();
+
+                        if(mainShop) {
+                            slot = getSlot(clone.getType(), gui.getInventory());
+                        }
+                        gui.updateItem(slot, clone);
+                    }
                     gui.update();
 
                 } else {
@@ -259,5 +388,15 @@ public class ShopManager {
                 }
             }
         });
+    }
+
+    public int getSlot(Material type, Inventory inventory) {
+        for(int i = 0; i < inventory.getSize(); i++) {
+            ItemStack newItem = inventory.getItem(i);
+            if(newItem != null && newItem.getType().equals(type)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

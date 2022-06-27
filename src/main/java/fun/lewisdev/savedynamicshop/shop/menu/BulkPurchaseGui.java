@@ -76,12 +76,14 @@ public class BulkPurchaseGui {
                             reward.setCost(cost);
                             economy.withdrawPlayer(player, cost);
 
-                            for (String command : reward.getCommands()) {
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
-                            }
+                            Bukkit.getScheduler().runTask(shopManager.getPlugin(), () -> {
+                                for (String command : reward.getCommands()) {
+                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{PLAYER}", player.getName()).replace("{AMOUNT}", String.valueOf(amount)));
+                                }
+                            });
 
                             player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 6L);
-                            Messages.BULK_PURCHASE_PURCHASE.send(player, "{AMOUNT}", TextUtil.numberFormat(amount), "{COST}", TextUtil.format(cost));
+                            Messages.BULK_PURCHASE_PURCHASE.send(player, "{AMOUNT}", TextUtil.numberFormat(amount), "{COST}", TextUtil.numberFormat(cost));
 
                         }else{
                             player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1L, 0L);
@@ -102,6 +104,7 @@ public class BulkPurchaseGui {
             ItemStack clone = reward.getDisplayItem().clone();
             int amount = config.getInt("buy_item_slots." + slot);
 
+            // Update the prices to update lore
             BigDecimal tempTotalCost = BigDecimal.valueOf(0);
             BigDecimal tempCost = BigDecimal.valueOf(reward.getCost());
             BigDecimal tempTotalSellPrice = BigDecimal.valueOf(0);
@@ -110,11 +113,10 @@ public class BulkPurchaseGui {
 
             for(int i = 1; i <= amount; i++) {
                 tempTotalCost = tempTotalCost.add(tempCost);
+                tempTotalSellPrice = tempTotalSellPrice.add(tempSellPrice);
 
                 tempCost = tempCost.multiply(BigDecimal.valueOf(multiplier));
                 tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
-
-                tempTotalSellPrice = tempTotalSellPrice.add(tempSellPrice);
             }
 
             double cost = tempTotalCost.doubleValue();
@@ -127,7 +129,7 @@ public class BulkPurchaseGui {
                     .replace("{SELL_PRICE}", TextUtil.numberFormat(sellPrice))));
 
             GuiItem guiItem = new GuiItem(new ItemStackBuilder(clone).withLore(lore).withAmount(Math.min(amount, 64)).build());
-            shopManager.handleInventoryAction(player, reward, guiItem, shop, gui, config);
+            shopManager.handleInventoryAction(player, reward, guiItem, shop, gui, config, "bulk");
             gui.setItem(Integer.parseInt(slot), guiItem);
         }
 
