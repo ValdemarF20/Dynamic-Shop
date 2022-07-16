@@ -57,8 +57,8 @@ shop_items:
       - "&eRight-Click to sell"
       - "&ePress Q for bulk buy"
     cost: 10
-    sell_min: 1
-    sell_max: 50
+    min_price: 1
+    max_price: 50
     # Multiplier is calculated using a number above 1 (1.5 being 50% increase)
     multiplier: 1.01
     commands:

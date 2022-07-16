@@ -84,8 +84,8 @@ public class ShopManager {
 
             int cost = section.getInt("cost");
             int sellPrice = section.getInt("sell_price");
-            long minPrice = section.getInt("sell_min");
-            long maxPrice = section.getInt("sell_max");
+            long minPrice = section.getInt("min_price");
+            long maxPrice = section.getInt("max_price");
             double ratio = section.getDouble("multiplier");
             List<String> commands = section.getStringList("commands");
             boolean bulkBuy = section.getBoolean("bulk_buy", true);
@@ -159,19 +159,33 @@ public class ShopManager {
             int amount = guiItem.getItemStack().getAmount();
             final ClickType clickType = event.getClick();
 
+            final long maxPrice = reward.getMaxPrice();
+            final long minPrice = reward.getMinPrice();
+            final double multiplier = reward.getMultiplier();
+
             // Q is pressed / Enter bulk buy GUI and return
             if ((clickType == ClickType.DROP || clickType == ClickType.CONTROL_DROP) && reward.isAllowBulkBuy()) {
                 bulkPurchaseGui.open(player, shop, reward);
             } else if(clickType == ClickType.LEFT) { // Left click is used to purchase
-
                 BigDecimal cost = BigDecimal.valueOf(0);
                 BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost());
+                boolean maxReached = (tempPrice.doubleValue() >= maxPrice);
 
-                for(int i = 1; i <= amount; i++) {
-                    cost = cost.add(tempPrice);
+                if(!maxReached) { // Checks if the limit was reached on previous purchase
+                    for(int i = 1; i <= amount; i++) {
+                        maxReached = (tempPrice.doubleValue() >= maxPrice);
+                        cost = cost.add(tempPrice);
 
-                    tempPrice = tempPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
+                        if(maxReached) { // Limit the price if max has been reached
+                            tempPrice = BigDecimal.valueOf(maxPrice);
+                        } else { // Only update price if limit has not been reached
+                            tempPrice = tempPrice.multiply(BigDecimal.valueOf(reward.getMultiplier()));
+                        }
                     }
+                } else {
+                    tempPrice = BigDecimal.valueOf(maxPrice);
+                    cost = tempPrice.multiply(BigDecimal.valueOf(amount));
+                }
 
                 if (economy.getBalance(player) >= cost.doubleValue()) {
                     reward.setCost(tempPrice.doubleValue());
@@ -198,6 +212,7 @@ public class ShopManager {
                         buySlots = shopConfig.getConfigurationSection("shop_items").getKeys(false);
                         mainShop = true;
                     }
+
                     // Update lore's in GUI
                     for (String slotStr : buySlots) {
                         int slot = -1;
@@ -223,18 +238,34 @@ public class ShopManager {
                         BigDecimal calcCost = BigDecimal.valueOf(reward.getCost());
                         BigDecimal calcSellPrice = calcCost.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
 
+                        boolean calcMaxReached = (calcCost.doubleValue() >= maxPrice);
+
                         int newAmount = 1;
 
-                        if(!mainShop) {
+                        if(!mainShop) { // In bulk shop
                             newAmount = config.getInt("buy_item_slots." + slot);
-                            double multiplier = reward.getMultiplier();
 
-                            for(int i = 1; i <= newAmount; i++) {
-                                calcTotalCost = calcTotalCost.add(calcCost);
-                                calcTotalSellPrice = calcTotalSellPrice.add(calcSellPrice);
+                            if(!calcMaxReached) { // Check if limits are already reached
+                                for(int i = 1; i <= newAmount; i++) {
+                                    calcMaxReached = (calcCost.doubleValue() >= maxPrice);
 
-                                calcCost = calcCost.multiply(BigDecimal.valueOf(multiplier));
-                                calcSellPrice = calcSellPrice.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
+                                    calcTotalCost = calcTotalCost.add(calcCost);
+                                    calcTotalSellPrice = calcTotalSellPrice.add(calcSellPrice);
+
+                                    // Update the prices if the limit has not been reached
+                                    if(calcMaxReached) {
+                                        calcCost = BigDecimal.valueOf(maxPrice);
+                                    } else {
+                                        calcCost = calcCost.multiply(BigDecimal.valueOf(multiplier));
+                                        calcSellPrice = calcSellPrice.multiply(BigDecimal.valueOf(multiplier));
+                                    }
+                                }
+                            } else {
+                                calcCost = BigDecimal.valueOf(maxPrice);
+                                calcSellPrice = calcCost.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128 );
+
+                                calcTotalCost = calcCost.multiply(BigDecimal.valueOf(newAmount));
+                                calcTotalSellPrice = calcSellPrice.multiply(BigDecimal.valueOf(newAmount));
                             }
                         } else {
                             calcTotalCost = calcCost;
@@ -271,6 +302,7 @@ public class ShopManager {
 
                 BigDecimal tempPrice = BigDecimal.valueOf(reward.getCost()); // Used to update the cost properly
                 BigDecimal tempSellPrice = tempPrice.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
+                boolean minReached = (tempSellPrice.doubleValue() <= minPrice);
 
                 if(player.getInventory().isEmpty()) {
                     return;
@@ -282,26 +314,51 @@ public class ShopManager {
                         break;
                     }
                     if(item.getType().equals(reward.getDisplayItem().getType())) {
-                        if(amount >= item.getAmount()) { // Item in the shop has a greater or equal to amount
-                            for(int i = 1; i <= item.getAmount(); i++) {
-                                sold = sold.add(tempSellPrice);
+                        if(!minReached) { // Check if limits are already reached
+                            if(amount >= item.getAmount()) { // Item in the shop has a greater or equal to amount
+                                for(int i = 1; i <= item.getAmount(); i++) {
+                                    minReached = (tempSellPrice.doubleValue() <= minPrice);
 
-                                tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
-                                tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                    sold = sold.add(tempSellPrice);
+
+                                    if(minReached) {
+                                        tempSellPrice = BigDecimal.valueOf(minPrice);
+                                    } else {
+                                        tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                        tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                    }
+                                }
+                                itemsSold+=item.getAmount();
+                                item.setAmount(0);
+                            } else { // Item in the inventory has a higher amount than in the shop
+                                for (int i = 1; i <= amount; i++) {
+                                    minReached = (tempSellPrice.doubleValue() <= minPrice);
+
+                                    sold = sold.add(tempSellPrice);
+
+                                    if(minReached) {
+                                        tempSellPrice = BigDecimal.valueOf(minPrice);
+                                    } else {
+                                        tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                        tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                                    }
+                                }
+                                itemsSold+=amount;
+                                item.setAmount(item.getAmount() - amount);
                             }
-                            itemsSold+=item.getAmount();
-                            item.setAmount(0);
+                        } else {
+                            tempSellPrice = BigDecimal.valueOf(minPrice);
+                            tempPrice = tempSellPrice.multiply(BigDecimal.valueOf(2));
 
-                        } else { // Item in the inventory has a higher amount than in the shop
-                            for(int i = 1; i <= amount; i++) {
-                                sold = sold.add(tempSellPrice);
-
-                                tempSellPrice = tempSellPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
-                                tempPrice = tempPrice.divide(BigDecimal.valueOf(reward.getMultiplier()), MathContext.DECIMAL128);
+                            if(amount >= item.getAmount()) {
+                                sold = tempSellPrice.multiply(BigDecimal.valueOf(item.getAmount()));
+                                itemsSold+=item.getAmount();
+                                item.setAmount(0);
+                            } else {
+                                sold = tempSellPrice.multiply(BigDecimal.valueOf(amount));
+                                itemsSold+=amount;
+                                item.setAmount(item.getAmount() - amount);
                             }
-
-                            itemsSold+=amount;
-                            item.setAmount(item.getAmount() - amount);
                         }
                         itemSold.set(true);
                     }
@@ -324,6 +381,7 @@ public class ShopManager {
                         mainShop = true;
                     }
                     // Update lore's in GUI
+
                     for (String slotStr : buySlots) {
                         int slot = -1;
                         try {
@@ -348,18 +406,35 @@ public class ShopManager {
                         BigDecimal calcCost = BigDecimal.valueOf(reward.getCost());
                         BigDecimal calcSellPrice = calcCost.divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
 
+                        boolean calcMinReached = (calcSellPrice.doubleValue() <= minPrice);
+
                         int newAmount = 1;
 
-                        if(!mainShop) {
+                        if(!mainShop) { // In bulk shop
                             newAmount = config.getInt("buy_item_slots." + slot);
-                            double multiplier = reward.getMultiplier();
 
-                            for(int i = 1; i <= newAmount; i++) {
-                                calcTotalCost = calcTotalCost.add(calcCost);
-                                calcTotalSellPrice = calcTotalSellPrice.add(calcSellPrice);
+                            if(!calcMinReached) { // Check if limits are already reached
+                                for (int i = 1; i <= newAmount; i++) {
+                                    calcMinReached = (calcSellPrice.doubleValue() <= minPrice);
 
-                                calcCost = calcCost.multiply(BigDecimal.valueOf(multiplier));
-                                calcSellPrice = calcSellPrice.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
+                                    calcTotalCost = calcTotalCost.add(calcCost);
+                                    calcTotalSellPrice = calcTotalSellPrice.add(calcSellPrice);
+
+                                    // Update the prices if the limit has not been reached
+
+                                    if (calcMinReached) {
+                                        calcSellPrice = BigDecimal.valueOf(minPrice);
+                                    } else {
+                                        calcSellPrice = calcSellPrice.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
+                                        calcCost = calcCost.divide(BigDecimal.valueOf(multiplier), MathContext.DECIMAL128);
+                                    }
+                                }
+                            } else {
+                                calcSellPrice = BigDecimal.valueOf(minPrice);
+                                calcCost = tempSellPrice.multiply(BigDecimal.valueOf(2));
+
+                                calcTotalSellPrice = calcSellPrice.multiply(BigDecimal.valueOf(newAmount));
+                                calcTotalCost = calcCost.multiply(BigDecimal.valueOf(newAmount));
                             }
                         } else {
                             calcTotalCost = calcCost;
