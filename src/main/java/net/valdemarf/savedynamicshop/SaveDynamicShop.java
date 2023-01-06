@@ -1,9 +1,9 @@
-package fun.lewisdev.savedynamicshop;
+package net.valdemarf.savedynamicshop;
 
-import fun.lewisdev.savedynamicshop.command.ShopCommand;
-import fun.lewisdev.savedynamicshop.config.Messages;
-import fun.lewisdev.savedynamicshop.shop.ShopManager;
-import fun.lewisdev.savedynamicshop.task.TimerTask;
+import net.valdemarf.savedynamicshop.command.ShopCommand;
+import net.valdemarf.savedynamicshop.config.Messages;
+import net.valdemarf.savedynamicshop.shop.ShopManager;
+import net.valdemarf.savedynamicshop.task.TimerTask;
 import me.mattstudios.mf.base.CommandManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;

@@ -1,10 +1,10 @@
-package fun.lewisdev.savedynamicshop.util;
+package net.valdemarf.savedynamicshop.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import fun.lewisdev.savedynamicshop.util.universal.XMaterial;
+import net.valdemarf.savedynamicshop.util.universal.XMaterial;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;

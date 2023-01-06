@@ -1,4 +1,4 @@
-package fun.lewisdev.savedynamicshop.util.universal;
+package net.valdemarf.savedynamicshop.util.universal;
 
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;

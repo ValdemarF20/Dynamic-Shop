@@ -1,9 +1,9 @@
-package fun.lewisdev.savedynamicshop.task;
+package net.valdemarf.savedynamicshop.task;
 
-import fun.lewisdev.savedynamicshop.SaveDynamicShop;
-import fun.lewisdev.savedynamicshop.shop.Shop;
-import fun.lewisdev.savedynamicshop.shop.ShopManager;
-import fun.lewisdev.savedynamicshop.util.TextUtil;
+import net.valdemarf.savedynamicshop.SaveDynamicShop;
+import net.valdemarf.savedynamicshop.shop.Shop;
+import net.valdemarf.savedynamicshop.shop.ShopManager;
+import net.valdemarf.savedynamicshop.util.TextUtil;
 import org.bukkit.Bukkit;
 
 public class TimerTask implements Runnable {

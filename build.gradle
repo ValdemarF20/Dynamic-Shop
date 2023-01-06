@@ -3,7 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
-group = 'fun.lewisdev'
+group = 'net.valdemarf'
 version = '1.0.0-SNAPSHOT'
 description = 'SaveRotatingShop'
 sourceCompatibility = JavaVersion.VERSION_17
@@ -43,6 +43,6 @@ compileJava {
 shadowJar {
     minimize()
     archiveFileName = "SaveDynamicShop-${project.version}.jar"
-    relocate 'dev.triumphteam.gui', 'fun.lewisdev.saverotatingshop.libs.gui'
-    relocate 'me.mattstudios.mf', 'fun.lewisdev.saverotatingshop.libs.command'
+    relocate 'dev.triumphteam.gui', 'net.valdemarf.saverotatingshop.libs.gui'
+    relocate 'me.mattstudios.mf', 'net.valdemarf.saverotatingshop.libs.command'
 }

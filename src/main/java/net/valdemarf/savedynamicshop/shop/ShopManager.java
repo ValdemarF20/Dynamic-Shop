@@ -1,16 +1,15 @@
-package fun.lewisdev.savedynamicshop.shop;
+package net.valdemarf.savedynamicshop.shop;
 
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
-import fun.lewisdev.savedynamicshop.SaveDynamicShop;
-import fun.lewisdev.savedynamicshop.config.ConfigHandler;
-import fun.lewisdev.savedynamicshop.shop.menu.BulkPurchaseGui;
-import fun.lewisdev.savedynamicshop.shop.menu.ShopGui;
-import fun.lewisdev.savedynamicshop.util.GuiUtils;
-import fun.lewisdev.savedynamicshop.util.ItemStackBuilder;
-import fun.lewisdev.savedynamicshop.util.TextUtil;
-import fun.lewisdev.savedynamicshop.util.universal.XSound;
-import net.kyori.adventure.text.Component;
+import net.valdemarf.savedynamicshop.SaveDynamicShop;
+import net.valdemarf.savedynamicshop.config.ConfigHandler;
+import net.valdemarf.savedynamicshop.shop.menu.BulkPurchaseGui;
+import net.valdemarf.savedynamicshop.shop.menu.ShopGui;
+import net.valdemarf.savedynamicshop.util.GuiUtils;
+import net.valdemarf.savedynamicshop.util.ItemStackBuilder;
+import net.valdemarf.savedynamicshop.util.TextUtil;
+import net.valdemarf.savedynamicshop.util.universal.XSound;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -28,7 +27,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class ShopManager {
 

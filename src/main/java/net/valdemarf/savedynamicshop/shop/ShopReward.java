@@ -1,4 +1,4 @@
-package fun.lewisdev.savedynamicshop.shop;
+package net.valdemarf.savedynamicshop.shop;
 
 import org.bukkit.inventory.ItemStack;
 

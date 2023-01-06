@@ -1,9 +1,9 @@
-package fun.lewisdev.savedynamicshop.util;
+package net.valdemarf.savedynamicshop.util;
 
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.GuiItem;
-import fun.lewisdev.savedynamicshop.shop.Shop;
-import fun.lewisdev.savedynamicshop.shop.ShopManager;
+import net.valdemarf.savedynamicshop.shop.Shop;
+import net.valdemarf.savedynamicshop.shop.ShopManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

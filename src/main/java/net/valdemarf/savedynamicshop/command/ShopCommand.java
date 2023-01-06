@@ -1,10 +1,10 @@
-package fun.lewisdev.savedynamicshop.command;
+package net.valdemarf.savedynamicshop.command;
 
-import fun.lewisdev.savedynamicshop.SaveDynamicShop;
-import fun.lewisdev.savedynamicshop.config.Messages;
-import fun.lewisdev.savedynamicshop.shop.Shop;
-import fun.lewisdev.savedynamicshop.shop.ShopManager;
-import fun.lewisdev.savedynamicshop.util.TextUtil;
+import net.valdemarf.savedynamicshop.SaveDynamicShop;
+import net.valdemarf.savedynamicshop.config.Messages;
+import net.valdemarf.savedynamicshop.shop.Shop;
+import net.valdemarf.savedynamicshop.shop.ShopManager;
+import net.valdemarf.savedynamicshop.util.TextUtil;
 import me.mattstudios.mf.annotations.*;
 import me.mattstudios.mf.base.CommandBase;
 import org.bukkit.command.CommandSender;

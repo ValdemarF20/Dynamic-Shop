@@ -1,6 +1,6 @@
-package fun.lewisdev.savedynamicshop.util;
+package net.valdemarf.savedynamicshop.util;
 
-import fun.lewisdev.savedynamicshop.util.universal.XMaterial;
+import net.valdemarf.savedynamicshop.util.universal.XMaterial;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;

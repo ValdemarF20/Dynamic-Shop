@@ -3,7 +3,7 @@
  * Copyright (c) 2021 - 2021 Lewis D (ItsLewizzz). All rights reserved.
  */
 
-package fun.lewisdev.savedynamicshop.util;
+package net.valdemarf.savedynamicshop.util;
 
 import org.bukkit.ChatColor;
 

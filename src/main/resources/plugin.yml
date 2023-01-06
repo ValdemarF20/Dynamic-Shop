@@ -1,6 +1,6 @@
 name: SaveDynamicShop
 version: 1.0.0
-main: fun.lewisdev.savedynamicshop.SaveDynamicShop
+main: net.valdemarf.savedynamicshop.SaveDynamicShop
 api-version: 1.18
 authors: [ValdemarF]
 

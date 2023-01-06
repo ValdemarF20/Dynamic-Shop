@@ -1,4 +1,4 @@
-package fun.lewisdev.savedynamicshop.config;
+package net.valdemarf.savedynamicshop.config;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;

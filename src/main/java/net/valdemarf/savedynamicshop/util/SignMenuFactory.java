@@ -1,4 +1,4 @@
-package fun.lewisdev.savedynamicshop.util;
+package net.valdemarf.savedynamicshop.util;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;

@@ -1,14 +1,14 @@
-package fun.lewisdev.savedynamicshop.shop.menu;
+package net.valdemarf.savedynamicshop.shop.menu;
 
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
-import fun.lewisdev.savedynamicshop.shop.Shop;
-import fun.lewisdev.savedynamicshop.shop.ShopManager;
-import fun.lewisdev.savedynamicshop.shop.ShopReward;
-import fun.lewisdev.savedynamicshop.util.GuiUtils;
-import fun.lewisdev.savedynamicshop.util.ItemStackBuilder;
-import fun.lewisdev.savedynamicshop.util.TextUtil;
-import fun.lewisdev.savedynamicshop.util.universal.XSound;
+import net.valdemarf.savedynamicshop.shop.Shop;
+import net.valdemarf.savedynamicshop.shop.ShopManager;
+import net.valdemarf.savedynamicshop.shop.ShopReward;
+import net.valdemarf.savedynamicshop.util.GuiUtils;
+import net.valdemarf.savedynamicshop.util.ItemStackBuilder;
+import net.valdemarf.savedynamicshop.util.TextUtil;
+import net.valdemarf.savedynamicshop.util.universal.XSound;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;

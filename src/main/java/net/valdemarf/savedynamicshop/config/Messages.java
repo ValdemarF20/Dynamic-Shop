@@ -1,6 +1,6 @@
-package fun.lewisdev.savedynamicshop.config;
+package net.valdemarf.savedynamicshop.config;
 
-import fun.lewisdev.savedynamicshop.util.TextUtil;
+import net.valdemarf.savedynamicshop.util.TextUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
